@@ -9,12 +9,17 @@ import {
   Play, 
   RefreshCw, 
   ShieldAlert,
-  Dog,
+  Cookie,
   Activity,
   ChevronRight
 } from 'lucide-react';
 import { GateMode } from './types';
 import { serialService } from './services/serialService';
+
+// Environment variable defaults
+const ENV_TITLE = process.env.VITE_APP_TITLE || 'SNACKTIME-PET';
+const DEFAULT_LIMIT = Number(process.env.VITE_DEFAULT_VISIT_LIMIT) || 3;
+const DEFAULT_LOCK_TIME = Number(process.env.VITE_DEFAULT_LOCK_TIME) || 1;
 
 interface Visit {
   id: number;
@@ -27,11 +32,11 @@ const App: React.FC = () => {
   const [currentMode, setCurrentMode] = useState<GateMode>(GateMode.AUTO);
   
   // Visit Limit State & Ref for real-time math accuracy
-  const [visitLimit, setVisitLimit] = useState(3);
-  const visitLimitRef = useRef(3); // CRITICAL: Used inside readLoop to avoid stale closures
+  const [visitLimit, setVisitLimit] = useState(DEFAULT_LIMIT);
+  const visitLimitRef = useRef(DEFAULT_LIMIT); 
   
-  const [limitInput, setLimitInput] = useState(3);
-  const [lockTime, setLockTime] = useState(1);
+  const [limitInput, setLimitInput] = useState(DEFAULT_LIMIT);
+  const [lockTime, setLockTime] = useState(DEFAULT_LOCK_TIME);
   const [logs, setLogs] = useState<string[]>([]);
   const [visitHistory, setVisitHistory] = useState<Visit[]>([]);
   const [isLocked, setIsLocked] = useState(false);
@@ -86,7 +91,7 @@ const App: React.FC = () => {
               if (parts.length > 1) {
                 const remaining = parseInt(parts[1]);
                 if (!isNaN(remaining)) {
-                  // Always use visitLimitRef.current to ensure we don't use the stale default (3)
+                  // Always use visitLimitRef.current to ensure we don't use the stale default
                   const currentLimit = visitLimitRef.current;
                   const inferredCount = currentLimit - remaining;
                   setCount(Math.max(0, inferredCount));
@@ -154,10 +159,10 @@ const App: React.FC = () => {
       <header className="w-full flex justify-between items-center mb-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
         <div className="flex items-center gap-4">
           <div className="bg-blue-600 p-3 rounded-2xl text-white shadow-lg shadow-blue-200">
-            <Dog size={24} />
+            <Cookie size={24} />
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-slate-900">PetGate Pro</h1>
+            <h1 className="text-xl font-bold tracking-tight text-slate-900">{ENV_TITLE}</h1>
             <p className="text-sm text-slate-500 flex items-center gap-1.5">
               <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-slate-300'}`}></span>
               {isConnected ? "System Connected" : "Connection Pending"}
@@ -353,7 +358,7 @@ const App: React.FC = () => {
       </div>
 
       <footer className="mt-12 text-center text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-8">
-        SmartPet Control Interface &bull; Hardware v1.0 &bull; Secure Bluetooth Link
+        {ENV_TITLE} Interface &bull; Hardware v1.0 &bull; Secure Bluetooth Link
       </footer>
     </div>
   );

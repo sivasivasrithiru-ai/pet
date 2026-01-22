@@ -1,6 +1,6 @@
 {
-  "name": "Copy of ESP32 Pet Gate Controller",
-  "description": "A high-end dashboard to control an ESP32-based smart pet gate via Bluetooth Serial, featuring mode switching, manual overrides, and limit configurations.",
+  "name": "SNACKTIME-PET Controller",
+  "description": "A high-end dashboard to control an ESP32-based smart pet gate via Bluetooth Serial, renamed to SNACKTIME-PET.",
   "requestFramePermissions": [
     "serial",
     "bluetooth"
