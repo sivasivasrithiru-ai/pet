@@ -10,7 +10,7 @@
     <style>
         body { font-family: 'Inter', sans-serif; }
     </style>
-    <!-- Shim for process.env to prevent crashes in browser environments -->
+    <!-- Shim for process.env for runtime safety -->
     <script>
       window.process = window.process || { env: {} };
     </script>
@@ -18,9 +18,11 @@
 {
   "imports": {
     "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
     "react/": "https://esm.sh/react@^19.2.3/",
     "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "vite": "https://esm.sh/vite@^7.3.1",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
     "@google/genai": "https://esm.sh/@google/genai@^1.38.0"
   }
 }
@@ -28,7 +30,6 @@
 </head>
 <body class="bg-slate-50 text-slate-900">
     <div id="root"></div>
-    <!-- Explicitly load the entry point -->
-    <script type="module" src="./index.tsx"></script>
+    <script type="module" src="/index.tsx"></script>
 </body>
 </html>

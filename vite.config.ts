@@ -1,23 +1,24 @@
-import path from 'path';
+
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ mode }) => {
-    const env = loadEnv(mode, '.', '');
-    return {
-      server: {
-        port: 3000,
-        host: '0.0.0.0',
+  const env = loadEnv(mode, process.cwd(), '');
+  return {
+    plugins: [react()],
+    define: {
+      'process.env.API_KEY': JSON.stringify(env.API_KEY || ''),
+      'process.env.VITE_APP_TITLE': JSON.stringify(env.VITE_APP_TITLE || 'SNACKTIME-PET'),
+      'process.env.VITE_DEFAULT_VISIT_LIMIT': JSON.stringify(env.VITE_DEFAULT_VISIT_LIMIT || '5'),
+      'process.env.VITE_DEFAULT_LOCK_TIME': JSON.stringify(env.VITE_DEFAULT_LOCK_TIME || '2'),
+    },
+    build: {
+      outDir: 'dist',
+      rollupOptions: {
+        input: {
+          main: './index.html',
+        },
       },
-      plugins: [react()],
-      define: {
-        'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
-      },
-      resolve: {
-        alias: {
-          '@': path.resolve(__dirname, '.'),
-        }
-      }
-    };
+    },
+  };
 });
