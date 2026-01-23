@@ -20,10 +20,10 @@ import { GateMode } from './types';
 import { serialService } from './services/serialService';
 import { GoogleGenAI } from "@google/genai";
 
-// Environment variable defaults
-const ENV_TITLE = process.env.VITE_APP_TITLE || 'SNACKTIME-PET';
-const DEFAULT_LIMIT = Number(process.env.VITE_DEFAULT_VISIT_LIMIT) || 3;
-const DEFAULT_LOCK_TIME = Number(process.env.VITE_DEFAULT_LOCK_TIME) || 1;
+// Environment variable defaults with safety checks
+const ENV_TITLE = (typeof process !== 'undefined' && process.env.VITE_APP_TITLE) || 'SNACKTIME-PET';
+const DEFAULT_LIMIT = Number(typeof process !== 'undefined' && process.env.VITE_DEFAULT_VISIT_LIMIT) || 5;
+const DEFAULT_LOCK_TIME = Number(typeof process !== 'undefined' && process.env.VITE_DEFAULT_LOCK_TIME) || 2;
 
 interface Visit {
   id: number;
@@ -35,7 +35,6 @@ const App: React.FC = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [currentMode, setCurrentMode] = useState<GateMode>(GateMode.AUTO);
   
-  // Visit Limit State & Ref for real-time math accuracy
   const [visitLimit, setVisitLimit] = useState(DEFAULT_LIMIT);
   const visitLimitRef = useRef(DEFAULT_LIMIT); 
   
@@ -47,7 +46,6 @@ const App: React.FC = () => {
   const [count, setCount] = useState(0);
   const [activeTab, setActiveTab] = useState<'history' | 'console' | 'ai'>('history');
 
-  // AI Logic State
   const [aiInsight, setAiInsight] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
 
@@ -62,7 +60,6 @@ const App: React.FC = () => {
     logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [logs]);
 
-  // Handle visit history updates when count changes
   useEffect(() => {
     if (count > prevCount.current) {
       const newVisit: Visit = {
@@ -122,8 +119,10 @@ const App: React.FC = () => {
   };
 
   const generateAiTip = async () => {
-    if (!process.env.API_KEY) {
-      setAiInsight("API Key missing. Please configure 'API_KEY' in your environment.");
+    const apiKey = typeof process !== 'undefined' ? process.env.API_KEY : null;
+    
+    if (!apiKey) {
+      setAiInsight("API Key missing. Please configure 'API_KEY' in your Netlify environment variables.");
       setActiveTab('ai');
       return;
     }
@@ -131,7 +130,7 @@ const App: React.FC = () => {
     setIsAiLoading(true);
     setActiveTab('ai');
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const ai = new GoogleGenAI({ apiKey: apiKey });
       const prompt = `
         You are an expert pet health and behavior assistant for SNACKTIME-PET.
         Analyze these recent activity metrics:
@@ -150,7 +149,7 @@ const App: React.FC = () => {
       setAiInsight(response.text || "No insights available at this time.");
     } catch (error) {
       console.error("AI Error:", error);
-      setAiInsight("Unable to connect to Pet Intelligence. Please check your API key.");
+      setAiInsight("Unable to connect to Pet Intelligence. Please check your API key configuration.");
     } finally {
       setIsAiLoading(false);
     }
@@ -188,7 +187,6 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen p-4 md:p-8 flex flex-col items-center max-w-6xl mx-auto font-sans">
-      {/* Header */}
       <header className="w-full flex justify-between items-center mb-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
         <div className="flex items-center gap-4">
           <div className="bg-blue-600 p-3 rounded-2xl text-white shadow-lg shadow-blue-200">
@@ -226,7 +224,6 @@ const App: React.FC = () => {
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 w-full">
-        {/* Left Column - Controls */}
         <div className="lg:col-span-8 space-y-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <StatusTile title="Status" value={isLocked ? "LOCKED" : "READY"} icon={isLocked ? <Lock size={16}/> : <Unlock size={16}/>} color={isLocked ? "text-rose-500 bg-rose-50" : "text-emerald-500 bg-emerald-50"} />
@@ -272,7 +269,6 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Column - Data & Intelligence */}
         <div className="lg:col-span-4 flex flex-col h-full min-h-[500px]">
           <div className="bg-white border border-slate-100 rounded-[2rem] shadow-sm flex flex-col h-full overflow-hidden">
             <div className="flex p-2 bg-slate-50 border-b border-slate-100 overflow-x-auto scrollbar-hide">
