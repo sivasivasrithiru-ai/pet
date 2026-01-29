@@ -5,16 +5,21 @@ export class SerialService {
   private reader: any | null = null;
   private lineBuffer: string = "";
 
+  isSupported(): boolean {
+    return 'serial' in navigator;
+  }
+
   async connect(): Promise<boolean> {
+    if (!this.isSupported()) return false;
     try {
-      // @ts-ignore - navigator.serial is not in standard types yet
+      // @ts-ignore
       this.port = await navigator.serial.requestPort();
       await this.port.open({ baudRate: 9600 });
       this.writer = this.port.writable.getWriter();
       this.reader = this.port.readable.getReader();
       return true;
     } catch (error) {
-      console.error('Serial connection failed:', error);
+      console.error('Connection failed:', error);
       return false;
     }
   }
@@ -32,7 +37,7 @@ export class SerialService {
         await this.port.close().catch(() => {});
       }
     } catch (e) {
-      console.error('Error during disconnect:', e);
+      // Silent fail on close
     } finally {
       this.port = null;
       this.writer = null;
@@ -45,10 +50,8 @@ export class SerialService {
     if (!this.writer) return;
     try {
       const encoder = new TextEncoder();
-      // Commands must end with \n for the ESP32 code to process them
       await this.writer.write(encoder.encode(cmd + '\n'));
     } catch (error) {
-      console.error('Write error:', error);
       throw error;
     }
   }
@@ -61,18 +64,12 @@ export class SerialService {
         const { value, done } = await this.reader.read();
         if (done) break;
 
-        // Accumulate data and split by lines
         this.lineBuffer += decoder.decode(value, { stream: true });
         const lines = this.lineBuffer.split('\n');
-        
-        // Keep the last partial line in the buffer
         this.lineBuffer = lines.pop() || "";
 
         for (const line of lines) {
-          const trimmedLine = line.trim();
-          if (trimmedLine) {
-            onData(trimmedLine);
-          }
+          if (line.trim()) onData(line.trim());
         }
       }
     } catch (error) {
