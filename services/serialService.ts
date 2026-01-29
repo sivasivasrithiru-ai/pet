@@ -9,12 +9,12 @@ export class SerialService {
     return 'serial' in navigator;
   }
 
-  async connect(): Promise<boolean> {
+  async connect(baudRate: number = 115200): Promise<boolean> {
     if (!this.isSupported()) return false;
     try {
       // @ts-ignore
       this.port = await navigator.serial.requestPort();
-      await this.port.open({ baudRate: 9600 });
+      await this.port.open({ baudRate });
       this.writer = this.port.writable.getWriter();
       this.reader = this.port.readable.getReader();
       return true;
